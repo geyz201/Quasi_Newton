@@ -1,13 +1,13 @@
 import matrix.*
-import matrix.VecTor
+import matrix.Vector
 import quasiNewton.fmin
 import java.util.*
 
 val n = 10
 val A = ColumnVector(DoubleArray(n) { Random().nextDouble() })
 
-fun simple(x: VecTor) = dot(x, x) + dot(A, x)
-fun hhh(x: VecTor) = ColumnVector(DoubleArray(n){ i->x[i]*2+A[i]})
+fun simple(x: Vector) = dot(x, x) + dot(A, x)
+fun hhh(x: Vector) = ColumnVector(DoubleArray(n){ i->x[i]*2+A[i]})
 fun main() {
     val ans=fmin(::simple,::hhh,ColumnVector(DoubleArray(n) { Random().nextDouble() }))
     println(ans.F)

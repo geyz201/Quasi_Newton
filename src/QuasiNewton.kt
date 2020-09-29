@@ -12,7 +12,7 @@ fun Matrix.BFSG_update(y: ColumnVector, s: ColumnVector): Unit {
     this -= (s * s.transpose()) * (dot(sby, y) / a / a)
 }
 
-class Pointwithfg(var x: ColumnVector, val f: (VecTor) -> Double, val grad: (VecTor) -> ColumnVector) {
+class Pointwithfg(var x: ColumnVector, val f: (Vector) -> Double, val grad: (Vector) -> ColumnVector) {
     val F by lazy { f(x) }
     val Grad by lazy { grad(x) }
 
@@ -89,7 +89,7 @@ class Pointwithfg(var x: ColumnVector, val f: (VecTor) -> Double, val grad: (Vec
     }
 }
 
-fun fmin(f: (VecTor) -> Double, grad: (VecTor) -> ColumnVector, x0: ColumnVector): Pointwithfg {
+fun fmin(f: (Vector) -> Double, grad: (Vector) -> ColumnVector, x0: ColumnVector): Pointwithfg {
     val d = x0.size
     val B = Identity(d)
     val err = sqrt(d.toDouble()) * 1e-6
