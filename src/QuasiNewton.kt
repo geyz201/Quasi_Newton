@@ -16,13 +16,13 @@ class Pointwithfg(var x: ColumnVector, val f: (Vector) -> Double, val grad: (Vec
     val F by lazy { f(x) }
     val Grad by lazy { grad(x) }
 
-    fun SearchWolfe(delta: ColumnVector, c1: Double = 0.25, c2: Double = 0.75): Pair<Pointwithfg, ColumnVector> {
+    fun SearchWolfe(delta: ColumnVector, c1: Double = 0.25, c2: Double = 0.75): Pointwithfg {
         var left = this
         var right = Pointwithfg(x + delta, f, grad)
         lateinit var middle: Pointwithfg
         do {
             if (right.F > F + dot(Grad, right.x - x) * c1 || (right.F >= left.F) && (left != this)) break
-            if (abs(dot(right.Grad, delta)) <= -dot(Grad, delta) * c2) return Pair(right, right.x - x)
+            if (abs(dot(right.Grad, delta)) <= -dot(Grad, delta) * c2) return right
             if (dot(right.Grad, delta) >= 0) {
                 val tmp = left;left = right;right = tmp;
                 break
@@ -35,12 +35,12 @@ class Pointwithfg(var x: ColumnVector, val f: (Vector) -> Double, val grad: (Vec
             if (right.F > F + dot(Grad, middle.x - x) * c1 || middle.F >= left.F) {
                 right = middle
             } else {
-                if (abs(dot(middle.Grad, delta)) <= -dot(Grad, delta) * c2) return Pair(middle, middle.x - x)
+                if (abs(dot(middle.Grad, delta)) <= -dot(Grad, delta) * c2) return middle
                 if (dot(middle.Grad, right.x - left.x) >= 0) right = left
                 left = middle
             }
         }
-        return Pair(middle, middle.x - x)
+        return middle
         /*var left: Double = 0.0
         var right: Double = 1.0
         var lamda: Double
@@ -94,15 +94,16 @@ fun fmin(f: (Vector) -> Double, grad: (Vector) -> ColumnVector, x0: ColumnVector
     val B = Identity(d)
     val err = sqrt(d.toDouble()) * 1e-6
     var point = Pointwithfg(x0, f, grad)
+    lateinit var newpoint: Pointwithfg
 
-    // with(point) {
     while (point.Grad.norm() > err) {
-        val delta = -B * point.Grad
-        var OldGrad = point.Grad
-        val (newpoint, s) = point.SearchWolfe(delta)
-        point=newpoint
-        B.BFSG_update(point.Grad - OldGrad, s)
+        with(point) {
+            val delta = -B * Grad
+            newpoint = point.SearchWolfe(delta)
+            B.BFSG_update(newpoint.Grad-Grad, newpoint.x - point.x)
+        }
+        point = newpoint
+
     }
-    //}
     return point
 }
